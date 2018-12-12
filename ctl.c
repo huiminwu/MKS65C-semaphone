@@ -7,41 +7,67 @@
 #include <errno.h>
 
 #define KEY 0xDEADBEEF
+#define MAX_LINE 256
 
  union semun {
-   int              val;    /* Value for SETVAL */
-   struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
-   unsigned short  *array;  /* Array for GETALL, SETALL */
-   struct seminfo  *__buf;  /* Buffer for IPC_INFO */
+     int              val;    /* Value for SETVAL */
+     struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
+     unsigned short  *array;  /* Array for GETALL, SETALL */
+     struct seminfo  *__buf;  /* Buffer for IPC_INFO */
  };
 
 int main(int argc, char *argv[]) {
 
-  int semd;
-  int r;
-  int v;
+    int semd, shmid, file;
+    int r;
+    int v;
 
-  if(argc > 1) {
-    if(!strcmp(argv[1], "-c") {
-        semd = semget(KEY, 1, IPC_CREAT | IPC_EXCL | 0644);
-          if (semd == -1) {
-            printf("error %d: %s\n", errno, strerror(errno));
-            semd = semget(KEY, 1, 0);
-            v = semctl(semd, 0, GETVAL, 0);
-            printf("semctl returned: %d\n", v);
-          }
+    if(argc > 1) {
+        if(!strcmp(argv[1], "-c") {
+            semd = semget(KEY, 1, IPC_CREAT | IPC_EXCL | 0644);
+            if (semd == -1) {
+                printf("error %d: %s\n", errno, strerror(errno));
+                semd = semget(KEY, 1, 0);
+                v = semctl(semd, 0, GETVAL, 0);
+                printf("semctl returned: %d\n", v);
+            }
+            else {
+                union semun us;
+                us.val = 3;
+                r = semctl(semd, 0, SETVAL, us);
+                printf("semctl returned: %d\n", r);
+            }
+            if((shmid = shmget(0, MAX_LINE, IPC_CREAT | 0644 )) == -1) {
+                perror("shmget");
+                exit(1);
+            }
+            printf("Created shared memory at %i\n", shmid);
+            
+            if(file = open("story", O_TRUNC | O_RDWR) == -1) {
+                perror("open");
+                exit(1);
+            }
+            printf("Created story file at fd %i\n", file);
+        } else if (!strcmp(argv[1], "-r") {
+            //remove
+            if((shmid = shmget(0, MAX_LINE, 0644 )) == -1) {
+                perror("shmget");
+            }
+            else {
+                shmctl(shmid, IPC_RMID, NULL);
+            }
+            if(remove("story") == -1) {
+                perror("rm");
+            }
+            if((semd = semget(KEY, 1, 0644)) == -1) {
+                perror("semget");
+            }
+                
+        } else if (!strcmp(argv[1], "-v") {
+            //view
+        } else {
+        }
+    }
 
-    } else if (!strcmp(argv[1], "-r") {
-        //remove
-    } else if (!strcmp(argv[1], "-v") {
-        //view
-    }   
-    else {
-    union semun us;
-    us.val = 3;
-    r = semctl(semd, 0, SETVAL, us);
-    printf("semctl returned: %d\n", r);
-  }
-
-  return 0;
+    return 0;
 }
