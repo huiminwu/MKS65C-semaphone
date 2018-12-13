@@ -17,7 +17,7 @@
  };
 
 int main(int argc, char *argv[]) {
-    char * story_buff
+    char story_buff[MAX_LINE];
     int semd, shmid, file;
     int r;
     int v;
