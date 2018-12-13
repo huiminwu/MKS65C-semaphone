@@ -21,7 +21,7 @@
  };
 
 int main(int argc, char *argv[]) {
-    char story_buff[MAX_LINE];
+    char story_buff[2000];
     int semd, shmid, file;
     int r;
     int v;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
             }
             printf("Created shared memory at %i\n", shmid);
             
-            if(file = open("story", O_TRUNC | O_RDWR | O_CREAT) == -1) {
+            if(file = open("story", O_TRUNC | O_RDWR | O_CREAT, 0666) == -1) {
                 perror("open");
                 exit(1);
             }
@@ -59,11 +59,9 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             else {
-                int bytes_read = 100;
                 printf("Story:\n");
-                while(bytes_read = read(file, story_buff, MAX_LINE)) {
-                    printf("%s", story_buff);
-                }
+                read(file, story_buff, 2000);
+                printf("%s", story_buff);
             }
             if((shmid = shmget(0, MAX_LINE, 0644 )) == -1) {
                 perror("shmget");
@@ -82,14 +80,17 @@ int main(int argc, char *argv[]) {
             }
         } else if (!strcmp(argv[1], "-v")) {
             //view
-            if((file = open("story", O_RDONLY) == -1)) {
+            if((file = open("story", O_RDONLY, 0644) == -1)) {
                 perror("open");
                 exit(1);
             }
             else {
-                int bytes_read = 100;
                 printf("Story:\n");
-                while(bytes_read = read(file, story_buff, MAX_LINE)) {
+                if(read(file, story_buff, 2000) == -1) {
+                    perror("read");
+                    exit(1);
+                }
+                else {
                     printf("%s", story_buff);
                 }
             }
