@@ -17,20 +17,20 @@
  };
 
 int main(int argc, char *argv[]) {
-
+    char * story_buff
     int semd, shmid, file;
     int r;
     int v;
 
     if(argc > 1) {
-        if(!strcmp(argv[1], "-c") {
+        if(!strcmp(argv[1], "-c")) {
             semd = semget(KEY, 1, IPC_CREAT | IPC_EXCL | 0644);
             if (semd == -1) {
                 printf("error %d: %s\n", errno, strerror(errno));
                 semd = semget(KEY, 1, 0);
                 v = semctl(semd, 0, GETVAL, 0);
                 printf("semctl returned: %d\n", v);
-            }
+            } 
             else {
                 union semun us;
                 us.val = 3;
@@ -48,12 +48,23 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             printf("Created story file at fd %i\n", file);
-        } else if (!strcmp(argv[1], "-r") {
+        } else if (!strcmp(argv[1], "-r")) {
             //remove
+            if((file = open("story", O_RDONLY) == -1)) {
+                perror("open");
+                exit(1);
+            }
+            else {
+                int bytes_read = 100;
+                printf("Story:\n");
+                while(bytes_read = read(file, story_buff, MAX_LINE)) {
+                    printf("%s", story_buff);
+                }
+            }
             if((shmid = shmget(0, MAX_LINE, 0644 )) == -1) {
                 perror("shmget");
             }
-            else {
+            else { 
                 shmctl(shmid, IPC_RMID, NULL);
             }
             if(remove("story") == -1) {
@@ -62,10 +73,24 @@ int main(int argc, char *argv[]) {
             if((semd = semget(KEY, 1, 0644)) == -1) {
                 perror("semget");
             }
-                
-        } else if (!strcmp(argv[1], "-v") {
+            else {
+                semctl(semd, 0, IPC_RMID);
+            }
+        } else if (!strcmp(argv[1], "-v")) {
             //view
+            if((file = open("story", O_RDONLY) == -1)) {
+                perror("open");
+                exit(1);
+            }
+            else {
+                int bytes_read = 100;
+                printf("Story:\n");
+                while(bytes_read = read(file, story_buff, MAX_LINE)) {
+                    printf("%s", story_buff);
+                }
+            }
         } else {
+            printf("wrong command line argument!\nuse -c, -r, or -v!\n");
         }
     }
 
