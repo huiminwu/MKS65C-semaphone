@@ -33,9 +33,15 @@ int main(int argc, char *argv[]) {
                 printf("error %d: %s\n", errno, strerror(errno));
                 semd = semget(KEY, 1, 0);
                 v = semctl(semd, 0, GETVAL, 0);
-                printf("semctl returned: %d\n", v);
+                printf("existing semval: %d\n", v);
+                union semun us;
+                us.val = 3;
+                printf("setting semval to 3\n");
+                r = semctl(semd, 0, SETVAL, us);
+                printf("semctl returned: %d\n", r);
             } 
             else {
+                printf("creating new sem with semval 3\n");
                 union semun us;
                 us.val = 3;
                 r = semctl(semd, 0, SETVAL, us);
@@ -45,13 +51,15 @@ int main(int argc, char *argv[]) {
                 perror("shmget");
                 exit(1);
             }
-            printf("Created shared memory at %i\n", shmid);
+            printf("Created shared memory with shmid %i\n", shmid);
             
-            if(file = open("story", O_TRUNC | O_RDWR | O_CREAT, 0666) == -1) {
+            if((file = open("story", O_TRUNC | O_RDONLY | O_CREAT, 0666)) == -1) {
                 perror("open");
                 exit(1);
             }
-            printf("Created story file at fd %i\n", file);
+            printf("Created story file (at fd %i)\n", file);
+            if(close(file) == -1)
+                perror("close");
         } else if (!strcmp(argv[1], "-r")) {
             //remove
             char story_buff[2000];
@@ -62,7 +70,7 @@ int main(int argc, char *argv[]) {
             else {
                 printf("Story:\n");
                 read(file, story_buff, 1999); //cause last is null
-                printf("%s", story_buff);
+                printf("%s\n", story_buff);
                 close(file);
             }
             if((shmid = shmget(0, MAX_LINE, 0644 )) == -1) {
@@ -93,7 +101,7 @@ int main(int argc, char *argv[]) {
                     exit(1);
                 }
                 else {
-                    printf("%s", story_buff);
+                    printf("%s\n", story_buff);
                 }
             }
         } else {

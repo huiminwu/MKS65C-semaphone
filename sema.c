@@ -20,6 +20,7 @@ int main() {
 
   //DOWNING
   struct sembuf sb;
+  struct stat   fs;
   sb.sem_num = 0;
   sb.sem_flg = SEM_UNDO;
   sb.sem_op = -1;
@@ -32,17 +33,22 @@ int main() {
       exit(1);
   }
   len_of_last = shmat(shmid, (void *)0, 0); //should get len on last line
+  if(len_of_last == (void *)-1)
+      perror("shmat");
   if (file = open("story", O_RDWR | O_APPEND) == -1) {
       perror("open");
       exit(1);
   }
 	
   //BROKEN BOI probably the lseek
-  if(*len_of_last = 0) {
+  if(*len_of_last == 0) {
       printf("first line\n");
   }
   else {
-	  lseek(file,0-*len_of_last, SEEK_END);
+      if(fstat(file, &fs))
+          perror("fstat");
+	  if(lseek(file, fs.st_size - *len_of_last, SEEK_SET) == -1)
+          perror("lseek");
 	  char line[MAX_LINE];
 	  if (read(file, line, MAX_LINE) == -1) {
 		  perror("read");
