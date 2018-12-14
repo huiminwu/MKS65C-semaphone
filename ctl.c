@@ -54,14 +54,16 @@ int main(int argc, char *argv[]) {
             printf("Created story file at fd %i\n", file);
         } else if (!strcmp(argv[1], "-r")) {
             //remove
+            char story_buff[2000];
             if((file = open("story", O_RDONLY) == -1)) {
                 perror("open");
                 exit(1);
             }
             else {
                 printf("Story:\n");
-                read(file, story_buff, 2000);
+                read(file, story_buff, 1999); //cause last is null
                 printf("%s", story_buff);
+                close(file);
             }
             if((shmid = shmget(0, MAX_LINE, 0644 )) == -1) {
                 perror("shmget");
