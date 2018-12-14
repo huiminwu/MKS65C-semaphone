@@ -52,8 +52,15 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
             printf("Created shared memory with shmid %i\n", shmid);
+            int *len_last = shmat(shmid, NULL, 0);
+            if(len_last == (void *)-1)
+                perror("shmat");
+            *len_last = 0;
+            if(shmdt(len_last) == -1)
+                perror("shmdt");
             
-            if((file = open("story", O_TRUNC | O_RDONLY | O_CREAT, 0666)) == -1) {
+            if((file = open("story", O_TRUNC | O_RDONLY | O_CREAT, 0666))
+                    == -1) {
                 perror("open");
                 exit(1);
             }
@@ -96,13 +103,19 @@ int main(int argc, char *argv[]) {
             }
             else {
                 printf("Story:\n");
-                if(read(file, story_buff, 2000) == -1) {
-                    perror("read");
-                    exit(1);
-                }
-                else {
-                    printf("%s\n", story_buff);
-                }
+                int rd_val = read(file, story_buff, 128) == -1;
+                while(rd_val) {
+                    printf("rd_val: %i\n", rd_val);
+                    if(rd_val == -1) {
+                        perror("read");
+                        exit(1);
+                    }
+                    else {
+                        printf("yahoo\n");
+                        printf("%s", story_buff);
+                    }
+                } // end while
+                printf("\n");
             }
         } else {
             printf("wrong command line argument!\nuse -c, -r, or -v!\n");

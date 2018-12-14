@@ -36,7 +36,7 @@ int main() {
   len_of_last = shmat(shmid, NULL, 0); //should get len on last line
   if(len_of_last == (void *)-1)
       perror("shmat");
-  if (file = open("story", O_RDWR | O_APPEND) == -1) {
+  if ((file = open("story", O_RDWR | O_APPEND)) == -1) {
       perror("open");
       exit(1);
   }
