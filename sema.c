@@ -28,11 +28,12 @@ int main() {
 
   printf("got the semaphore!\n");
 
-  if (shmid = shmget(0, MAX_LINE, 0644) == -1) {
+  if ((shmid = shmget(KEY, MAX_LINE, 0644)) == -1) {
       perror("shmget");
       exit(1);
   }
-  len_of_last = shmat(shmid, (void *)0, 0); //should get len on last line
+  printf("obtained shmid: %i\n", shmid);
+  len_of_last = shmat(shmid, NULL, 0); //should get len on last line
   if(len_of_last == (void *)-1)
       perror("shmat");
   if (file = open("story", O_RDWR | O_APPEND) == -1) {
@@ -57,7 +58,7 @@ int main() {
 	  printf("Last line:\n %s", line);
   }
   
-  printf("Enter next line:\n");
+  printf("\nEnter next line:\n");
   char input[MAX_LINE];
   fgets(input, MAX_LINE, stdin);
 

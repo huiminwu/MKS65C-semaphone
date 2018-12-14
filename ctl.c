@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
                 r = semctl(semd, 0, SETVAL, us);
                 printf("semctl returned: %d\n", r);
             }
-            if((shmid = shmget(0, MAX_LINE, IPC_CREAT | 0644 )) == -1) {
+            if((shmid = shmget(KEY, MAX_LINE, IPC_CREAT | 0644 )) == -1) {
                 perror("shmget");
                 exit(1);
             }
